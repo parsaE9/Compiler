@@ -17,14 +17,14 @@ class Lexer:
         'on': 'ON',
         'and': 'AND',
         'or': 'OR',
-        'not': 'NON',
+        'not': 'NOT',
         'in': 'IN',
         'Error': 'ERROR',
     }
 
     tokens = [
         'LRB', 'RRB', 'LCB', 'RCB', 'LSB', 'RSB',
-        'INTEGER', 'ID', 'KEYWORD',
+        'INTEGER', 'FLOAT', 'ID',
         'SUM', 'SUB', 'MUL', 'DIV', 'MOD', 'ASSIGN',
         'LT', 'GT', 'GE', 'LE', 'EQ', 'NE',
         'SEMICOLON', 'COLON', 'COMMA',
@@ -56,25 +56,41 @@ class Lexer:
     t_EQ = r'\=='
     t_NE = r'\!='
 
+    def t_ERROR(self, t):
+        r'(\d+\.\d+\.\d*)|([0-9]+[a-zA-Z_]+)|([A-Z][a-zA-z0-9_]*)|([\+\-\*\/\%][ \+\-\*\/\%]+)'
+        return t
+
+    def t_FLOAT(self, t):
+        r'\d+\.\d+'
+        if len(t.value.split('.')[0]) < 10 and len(t.value.split('.')[1]) < 10:
+            t.value = float(t.value)
+            return t
+        t.type = "ERROR"
+        return t
+
     def t_INTEGER(self, t):
         r'\d+'
         # r'[+|-]?(\d+)'
-        # t.value = int(t.value)
+        # print(t, t.value, len(t.value))
+        if len(t.value) < 10:
+            t.value = int(t.value)
+            return t
+        t.type = "ERROR"
         return t
 
     def t_ID(self, t):
-        r'[a-z_][a-zA-Z_0-9]*'
+        r'[a-zA-Z_][a-zA-Z_0-9]*'
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
         # Look up symbol table information and return a tuple
         # t.value = (t.value, symbol_lookup(t.value))
         return t
 
-    def t_KEYWORD(self, t):
-        r'[a-zA-Z][a-zA-Z_0-9]*'
-        t.type = self.reserved.get(t.value, 'KEYWORD')  # Check for reserved words
-        # Look up symbol table information and return a tuple
-        # t.value = (t.value, symbol_lookup(t.value))
-        return t
+    # def t_KEYWORD(self, t):
+    #     r'[a-zA-Z][a-zA-Z_0-9]*'
+    #     t.type = self.reserved.get(t.value, 'KEYWORD')  # Check for reserved words
+    #     # Look up symbol table information and return a tuple
+    #     # t.value = (t.value, symbol_lookup(t.value))
+    #     return t
 
     def t_newline(self, t):
         r'\n+'
@@ -89,10 +105,9 @@ class Lexer:
         # No return value. Token discarded
 
     # alternative solution
-    # t_ignore_COMMENT = r'\#.*'
+    # t_ignore_LEADINGZERO = r'0+'
 
     def t_error(self, t):
-
         # raise Exception('Error at', t.value)
         print("Illegal character '%s'" % t.value[0])
         t.lexer.skip(1)
