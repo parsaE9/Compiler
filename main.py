@@ -1,7 +1,7 @@
 from lexer import Lexer
 
 lexer = Lexer().build()
-file = open('test.txt')
+file = open('test1.txt')
 text_input = file.read()
 file.close()
 lexer.input(text_input)
@@ -11,7 +11,3 @@ while True:
         break
     # print(tok)
     print(tok.type, tok.value)
-
-# a = []
-# b = {}
-# print(type(a), type(b))

@@ -1,1 +1,2 @@
-- integer number length when it has leading zeros?
+- integer or float number length when it has leading zeros?
+- optimization

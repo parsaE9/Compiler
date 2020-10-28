@@ -14,17 +14,24 @@ class Lexer:
         'fun': 'FUNCTION',
         'return': 'RETURN',
         'main': 'MAIN',
+        'int': 'INTEGER',
+        'float': 'FLOAT',
+        'bool': 'BOOLEAN',
+        'for': 'FOR',
+        'void': 'VOID',
         'on': 'ON',
         'and': 'AND',
         'or': 'OR',
         'not': 'NOT',
         'in': 'IN',
+        'True': 'TRUE',
+        'False': 'FALSE',
         'Error': 'ERROR',
     }
 
     tokens = [
         'LRB', 'RRB', 'LCB', 'RCB', 'LSB', 'RSB',
-        'INTEGER', 'FLOAT', 'ID',
+        'INTEGERNUMBER', 'FLOATNUMBER', 'ID',
         'SUM', 'SUB', 'MUL', 'DIV', 'MOD', 'ASSIGN',
         'LT', 'GT', 'GE', 'LE', 'EQ', 'NE',
         'SEMICOLON', 'COLON', 'COMMA',
@@ -56,11 +63,15 @@ class Lexer:
     t_EQ = r'\=='
     t_NE = r'\!='
 
+    # \w = [a-zA-Z_0-9]
     def t_ERROR(self, t):
-        r'(\d+\.\d+\.\d*)|([0-9]+[a-zA-Z_]+)|([A-Z][a-zA-z0-9_]*)|([\+\-\*\/\%][ \+\-\*\/\%]+)'
+        r'(\d+\.\d+\.\d*)|([0-9]+[a-zA-Z_]+)|([A-Z](\w)*)|([\+\-\*\/\%][ \+\-\*\/\%]*[\+\-\*\/\%])'
+        if self.reserved.get(t.value):  # Check for reserved words
+            t.type = self.reserved.get(t.value)
+            return t
         return t
 
-    def t_FLOAT(self, t):
+    def t_FLOATNUMBER(self, t):
         r'\d+\.\d+'
         if len(t.value.split('.')[0]) < 10 and len(t.value.split('.')[1]) < 10:
             t.value = float(t.value)
@@ -68,7 +79,7 @@ class Lexer:
         t.type = "ERROR"
         return t
 
-    def t_INTEGER(self, t):
+    def t_INTEGERNUMBER(self, t):
         r'\d+'
         # r'[+|-]?(\d+)'
         # print(t, t.value, len(t.value))
@@ -84,13 +95,6 @@ class Lexer:
         # Look up symbol table information and return a tuple
         # t.value = (t.value, symbol_lookup(t.value))
         return t
-
-    # def t_KEYWORD(self, t):
-    #     r'[a-zA-Z][a-zA-Z_0-9]*'
-    #     t.type = self.reserved.get(t.value, 'KEYWORD')  # Check for reserved words
-    #     # Look up symbol table information and return a tuple
-    #     # t.value = (t.value, symbol_lookup(t.value))
-    #     return t
 
     def t_newline(self, t):
         r'\n+'
