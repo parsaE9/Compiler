@@ -1,2 +1,5 @@
 - integer or float number length when it has leading zeros?
+	first remove leading zeros then check condition
+	
 - optimization
+	not needed(maybe for lexer)

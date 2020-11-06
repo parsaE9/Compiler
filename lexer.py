@@ -18,7 +18,6 @@ class Lexer:
         'float': 'FLOAT',
         'bool': 'BOOLEAN',
         'for': 'FOR',
-        'void': 'VOID',
         'on': 'ON',
         'and': 'AND',
         'or': 'OR',
@@ -65,7 +64,7 @@ class Lexer:
 
     # \w = [a-zA-Z_0-9]
     def t_ERROR(self, t):
-        r'(\d+\.\d+\.\d*)|([0-9]+[a-zA-Z_]+)|([A-Z](\w)*)|([\+\-\*\/\%][ \+\-\*\/\%]*[\+\-\*\/\%])'
+        r'(\d+\.\d+\.[a-zA-Z_0-9]*)|(\d+\.\d+[a-zA-Z_]+)|([0-9]+[a-zA-Z_]+)|([A-Z](\w)*)|([\+\-\*\/\%][ \+\-\*\/\%]*[\+\-\*\/\%])'
         if self.reserved.get(t.value):  # Check for reserved words
             t.type = self.reserved.get(t.value)
             return t
@@ -73,8 +72,8 @@ class Lexer:
 
     def t_FLOATNUMBER(self, t):
         r'\d+\.\d+'
-        if len(t.value.split('.')[0]) < 10 and len(t.value.split('.')[1]) < 10:
-            t.value = float(t.value)
+        t.value = float(t.value)
+        if len(str(t.value).split('.')[0]) < 10:
             return t
         t.type = "ERROR"
         return t
@@ -83,14 +82,14 @@ class Lexer:
         r'\d+'
         # r'[+|-]?(\d+)'
         # print(t, t.value, len(t.value))
-        if len(t.value) < 10:
-            t.value = int(t.value)
+        t.value = int(t.value)
+        if len(str(t.value)) < 10:
             return t
         t.type = "ERROR"
         return t
 
     def t_ID(self, t):
-        r'[a-zA-Z_][a-zA-Z_0-9]*'
+        r'[a-z_][a-zA-Z_0-9]*'
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
         # Look up symbol table information and return a tuple
         # t.value = (t.value, symbol_lookup(t.value))
