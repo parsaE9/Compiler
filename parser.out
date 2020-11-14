@@ -1,0 +1,289 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    AND
+    ASSIGN
+    BOOLEAN
+    COLON
+    COMMA
+    ELSE
+    ELSEIF
+    EQ
+    ERROR
+    FALSE
+    FLOAT
+    FLOATNUMBER
+    FOR
+    FUNCTION
+    GE
+    GT
+    ID
+    IF
+    IN
+    INTEGERNUMBER
+    LCB
+    LE
+    LRB
+    LSB
+    LT
+    MAIN
+    MOD
+    NE
+    NOT
+    ON
+    OR
+    PRINT
+    RCB
+    RETURN
+    RRB
+    RSB
+    SEMICOLON
+    THEN
+    TRUE
+    WHILE
+
+Grammar
+
+Rule 0     S' -> program
+Rule 1     program -> exp
+Rule 2     exp -> exp SUM exp
+Rule 3     exp -> exp SUB exp
+Rule 4     exp -> exp MUL exp
+Rule 5     exp -> exp DIV exp
+Rule 6     exp -> INTEGER
+
+Terminals, with rules where they appear
+
+AND                  : 
+ASSIGN               : 
+BOOLEAN              : 
+COLON                : 
+COMMA                : 
+DIV                  : 5
+ELSE                 : 
+ELSEIF               : 
+EQ                   : 
+ERROR                : 
+FALSE                : 
+FLOAT                : 
+FLOATNUMBER          : 
+FOR                  : 
+FUNCTION             : 
+GE                   : 
+GT                   : 
+ID                   : 
+IF                   : 
+IN                   : 
+INTEGER              : 6
+INTEGERNUMBER        : 
+LCB                  : 
+LE                   : 
+LRB                  : 
+LSB                  : 
+LT                   : 
+MAIN                 : 
+MOD                  : 
+MUL                  : 4
+NE                   : 
+NOT                  : 
+ON                   : 
+OR                   : 
+PRINT                : 
+RCB                  : 
+RETURN               : 
+RRB                  : 
+RSB                  : 
+SEMICOLON            : 
+SUB                  : 3
+SUM                  : 2
+THEN                 : 
+TRUE                 : 
+WHILE                : 
+error                : 
+
+Nonterminals, with rules where they appear
+
+exp                  : 1 2 2 3 3 4 4 5 5
+program              : 0
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . program
+    (1) program -> . exp
+    (2) exp -> . exp SUM exp
+    (3) exp -> . exp SUB exp
+    (4) exp -> . exp MUL exp
+    (5) exp -> . exp DIV exp
+    (6) exp -> . INTEGER
+
+    INTEGER         shift and go to state 3
+
+    program                        shift and go to state 1
+    exp                            shift and go to state 2
+
+state 1
+
+    (0) S' -> program .
+
+
+
+state 2
+
+    (1) program -> exp .
+    (2) exp -> exp . SUM exp
+    (3) exp -> exp . SUB exp
+    (4) exp -> exp . MUL exp
+    (5) exp -> exp . DIV exp
+
+    $end            reduce using rule 1 (program -> exp .)
+    SUM             shift and go to state 4
+    SUB             shift and go to state 5
+    MUL             shift and go to state 6
+    DIV             shift and go to state 7
+
+
+state 3
+
+    (6) exp -> INTEGER .
+
+    SUM             reduce using rule 6 (exp -> INTEGER .)
+    SUB             reduce using rule 6 (exp -> INTEGER .)
+    MUL             reduce using rule 6 (exp -> INTEGER .)
+    DIV             reduce using rule 6 (exp -> INTEGER .)
+    $end            reduce using rule 6 (exp -> INTEGER .)
+
+
+state 4
+
+    (2) exp -> exp SUM . exp
+    (2) exp -> . exp SUM exp
+    (3) exp -> . exp SUB exp
+    (4) exp -> . exp MUL exp
+    (5) exp -> . exp DIV exp
+    (6) exp -> . INTEGER
+
+    INTEGER         shift and go to state 3
+
+    exp                            shift and go to state 8
+
+state 5
+
+    (3) exp -> exp SUB . exp
+    (2) exp -> . exp SUM exp
+    (3) exp -> . exp SUB exp
+    (4) exp -> . exp MUL exp
+    (5) exp -> . exp DIV exp
+    (6) exp -> . INTEGER
+
+    INTEGER         shift and go to state 3
+
+    exp                            shift and go to state 9
+
+state 6
+
+    (4) exp -> exp MUL . exp
+    (2) exp -> . exp SUM exp
+    (3) exp -> . exp SUB exp
+    (4) exp -> . exp MUL exp
+    (5) exp -> . exp DIV exp
+    (6) exp -> . INTEGER
+
+    INTEGER         shift and go to state 3
+
+    exp                            shift and go to state 10
+
+state 7
+
+    (5) exp -> exp DIV . exp
+    (2) exp -> . exp SUM exp
+    (3) exp -> . exp SUB exp
+    (4) exp -> . exp MUL exp
+    (5) exp -> . exp DIV exp
+    (6) exp -> . INTEGER
+
+    INTEGER         shift and go to state 3
+
+    exp                            shift and go to state 11
+
+state 8
+
+    (2) exp -> exp SUM exp .
+    (2) exp -> exp . SUM exp
+    (3) exp -> exp . SUB exp
+    (4) exp -> exp . MUL exp
+    (5) exp -> exp . DIV exp
+
+    SUM             reduce using rule 2 (exp -> exp SUM exp .)
+    SUB             reduce using rule 2 (exp -> exp SUM exp .)
+    $end            reduce using rule 2 (exp -> exp SUM exp .)
+    MUL             shift and go to state 6
+    DIV             shift and go to state 7
+
+  ! MUL             [ reduce using rule 2 (exp -> exp SUM exp .) ]
+  ! DIV             [ reduce using rule 2 (exp -> exp SUM exp .) ]
+  ! SUM             [ shift and go to state 4 ]
+  ! SUB             [ shift and go to state 5 ]
+
+
+state 9
+
+    (3) exp -> exp SUB exp .
+    (2) exp -> exp . SUM exp
+    (3) exp -> exp . SUB exp
+    (4) exp -> exp . MUL exp
+    (5) exp -> exp . DIV exp
+
+    SUM             reduce using rule 3 (exp -> exp SUB exp .)
+    SUB             reduce using rule 3 (exp -> exp SUB exp .)
+    $end            reduce using rule 3 (exp -> exp SUB exp .)
+    MUL             shift and go to state 6
+    DIV             shift and go to state 7
+
+  ! MUL             [ reduce using rule 3 (exp -> exp SUB exp .) ]
+  ! DIV             [ reduce using rule 3 (exp -> exp SUB exp .) ]
+  ! SUM             [ shift and go to state 4 ]
+  ! SUB             [ shift and go to state 5 ]
+
+
+state 10
+
+    (4) exp -> exp MUL exp .
+    (2) exp -> exp . SUM exp
+    (3) exp -> exp . SUB exp
+    (4) exp -> exp . MUL exp
+    (5) exp -> exp . DIV exp
+
+    SUM             reduce using rule 4 (exp -> exp MUL exp .)
+    SUB             reduce using rule 4 (exp -> exp MUL exp .)
+    MUL             reduce using rule 4 (exp -> exp MUL exp .)
+    DIV             reduce using rule 4 (exp -> exp MUL exp .)
+    $end            reduce using rule 4 (exp -> exp MUL exp .)
+
+  ! SUM             [ shift and go to state 4 ]
+  ! SUB             [ shift and go to state 5 ]
+  ! MUL             [ shift and go to state 6 ]
+  ! DIV             [ shift and go to state 7 ]
+
+
+state 11
+
+    (5) exp -> exp DIV exp .
+    (2) exp -> exp . SUM exp
+    (3) exp -> exp . SUB exp
+    (4) exp -> exp . MUL exp
+    (5) exp -> exp . DIV exp
+
+    SUM             reduce using rule 5 (exp -> exp DIV exp .)
+    SUB             reduce using rule 5 (exp -> exp DIV exp .)
+    MUL             reduce using rule 5 (exp -> exp DIV exp .)
+    DIV             reduce using rule 5 (exp -> exp DIV exp .)
+    $end            reduce using rule 5 (exp -> exp DIV exp .)
+
+  ! SUM             [ shift and go to state 4 ]
+  ! SUB             [ shift and go to state 5 ]
+  ! MUL             [ shift and go to state 6 ]
+  ! DIV             [ shift and go to state 7 ]
+
