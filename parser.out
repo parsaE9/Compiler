@@ -3,287 +3,141 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 Unused terminals:
 
     AND
-    ASSIGN
     BOOLEAN
     COLON
-    COMMA
     ELSE
     ELSEIF
-    EQ
     ERROR
     FALSE
     FLOAT
     FLOATNUMBER
-    FOR
     FUNCTION
-    GE
-    GT
-    ID
     IF
     IN
-    INTEGERNUMBER
+    INTEGER
     LCB
     LE
-    LRB
-    LSB
-    LT
-    MAIN
     MOD
-    NE
     NOT
     ON
     OR
-    PRINT
     RCB
     RETURN
-    RRB
-    RSB
-    SEMICOLON
     THEN
     TRUE
-    WHILE
 
 Grammar
 
 Rule 0     S' -> program
-Rule 1     program -> exp
-Rule 2     exp -> exp SUM exp
-Rule 3     exp -> exp SUB exp
-Rule 4     exp -> exp MUL exp
-Rule 5     exp -> exp DIV exp
-Rule 6     exp -> INTEGER
+Rule 1     program -> declist MAIN LRB RRB block
+Rule 2     declist -> declist dec
+Rule 3     declist -> <empty>
+Rule 4     dec -> vardec
+Rule 5     idlist -> idlist COMMA iddec
+Rule 6     iddec -> ID
+Rule 7     iddec -> ID LSB exp RSB
+Rule 8     iddec -> ID ASSIGN exp
+Rule 9     funcdec -> type ID LRB paramdecs RRB block
+Rule 10    paramdecslist -> paramdec
+Rule 11    paramdecslist -> paramdecs COMMA paramdec
+Rule 12    paramdec -> type ID
+Rule 13    paramdec -> type ID LSB RSB
+Rule 14    varlist -> varlist vardec
+Rule 15    stmtlist -> <empty>
+Rule 16    lvalue -> ID
+Rule 17    lvalue -> ID LSB exp RSB
+Rule 18    stmt -> return exp SEMICOLON
+Rule 19    stmt -> exp SEMICOLON
+Rule 20    stmt -> block
+Rule 21    stmt -> PRINT LRB ID RRB SEMICOLON
+Rule 22    stmt -> WHILE LRB exp RRB stmt
+Rule 23    stmt -> FOR LRB exp SEMICOLON exp SEMICOLON exp RRB stmt
+Rule 24    m -> <empty>
+Rule 25    exp -> lvalue ASSIGN exp
+Rule 26    exp -> exp SUM exp
+Rule 27    exp -> exp SUB exp
+Rule 28    exp -> exp MUL exp
+Rule 29    exp -> exp DIV exp
+Rule 30    exp -> exp GT exp
+Rule 31    exp -> exp LT exp
+Rule 32    exp -> exp NE exp
+Rule 33    exp -> exp EQ exp
+Rule 34    exp -> exp GE exp
+Rule 35    exp -> ID LRB explist RRB
+Rule 36    exp -> LRB exp RRB
+Rule 37    explist -> exp
+Rule 38    explist -> explist COMMA exp
+Rule 39    exp -> INTEGERNUMBER
 
 Terminals, with rules where they appear
 
 AND                  : 
-ASSIGN               : 
+ASSIGN               : 8 25
 BOOLEAN              : 
 COLON                : 
-COMMA                : 
-DIV                  : 5
+COMMA                : 5 11 38
+DIV                  : 29
 ELSE                 : 
 ELSEIF               : 
-EQ                   : 
+EQ                   : 33
 ERROR                : 
 FALSE                : 
 FLOAT                : 
 FLOATNUMBER          : 
-FOR                  : 
+FOR                  : 23
 FUNCTION             : 
-GE                   : 
-GT                   : 
-ID                   : 
+GE                   : 34
+GT                   : 30
+ID                   : 6 7 8 9 12 13 16 17 21 35
 IF                   : 
 IN                   : 
-INTEGER              : 6
-INTEGERNUMBER        : 
+INTEGER              : 
+INTEGERNUMBER        : 39
 LCB                  : 
 LE                   : 
-LRB                  : 
-LSB                  : 
-LT                   : 
-MAIN                 : 
+LRB                  : 1 9 21 22 23 35 36
+LSB                  : 7 13 17
+LT                   : 31
+MAIN                 : 1
 MOD                  : 
-MUL                  : 4
-NE                   : 
+MUL                  : 28
+NE                   : 32
 NOT                  : 
 ON                   : 
 OR                   : 
-PRINT                : 
+PRINT                : 21
 RCB                  : 
 RETURN               : 
-RRB                  : 
-RSB                  : 
-SEMICOLON            : 
-SUB                  : 3
-SUM                  : 2
+RRB                  : 1 9 21 22 23 35 36
+RSB                  : 7 13 17
+SEMICOLON            : 18 19 21 23 23
+SUB                  : 27
+SUM                  : 26
 THEN                 : 
 TRUE                 : 
-WHILE                : 
+WHILE                : 22
 error                : 
 
 Nonterminals, with rules where they appear
 
-exp                  : 1 2 2 3 3 4 4 5 5
+block                : 1 9 20
+dec                  : 2
+declist              : 1 2
+exp                  : 7 8 17 18 19 22 23 23 23 25 26 26 27 27 28 28 29 29 30 30 31 31 32 32 33 33 34 34 36 37 38
+explist              : 35 38
+funcdec              : 
+iddec                : 5
+idlist               : 5
+lvalue               : 25
+m                    : 
+paramdec             : 10 11
+paramdecs            : 9 11
+paramdecslist        : 
 program              : 0
-
-Parsing method: LALR
-
-state 0
-
-    (0) S' -> . program
-    (1) program -> . exp
-    (2) exp -> . exp SUM exp
-    (3) exp -> . exp SUB exp
-    (4) exp -> . exp MUL exp
-    (5) exp -> . exp DIV exp
-    (6) exp -> . INTEGER
-
-    INTEGER         shift and go to state 3
-
-    program                        shift and go to state 1
-    exp                            shift and go to state 2
-
-state 1
-
-    (0) S' -> program .
-
-
-
-state 2
-
-    (1) program -> exp .
-    (2) exp -> exp . SUM exp
-    (3) exp -> exp . SUB exp
-    (4) exp -> exp . MUL exp
-    (5) exp -> exp . DIV exp
-
-    $end            reduce using rule 1 (program -> exp .)
-    SUM             shift and go to state 4
-    SUB             shift and go to state 5
-    MUL             shift and go to state 6
-    DIV             shift and go to state 7
-
-
-state 3
-
-    (6) exp -> INTEGER .
-
-    SUM             reduce using rule 6 (exp -> INTEGER .)
-    SUB             reduce using rule 6 (exp -> INTEGER .)
-    MUL             reduce using rule 6 (exp -> INTEGER .)
-    DIV             reduce using rule 6 (exp -> INTEGER .)
-    $end            reduce using rule 6 (exp -> INTEGER .)
-
-
-state 4
-
-    (2) exp -> exp SUM . exp
-    (2) exp -> . exp SUM exp
-    (3) exp -> . exp SUB exp
-    (4) exp -> . exp MUL exp
-    (5) exp -> . exp DIV exp
-    (6) exp -> . INTEGER
-
-    INTEGER         shift and go to state 3
-
-    exp                            shift and go to state 8
-
-state 5
-
-    (3) exp -> exp SUB . exp
-    (2) exp -> . exp SUM exp
-    (3) exp -> . exp SUB exp
-    (4) exp -> . exp MUL exp
-    (5) exp -> . exp DIV exp
-    (6) exp -> . INTEGER
-
-    INTEGER         shift and go to state 3
-
-    exp                            shift and go to state 9
-
-state 6
-
-    (4) exp -> exp MUL . exp
-    (2) exp -> . exp SUM exp
-    (3) exp -> . exp SUB exp
-    (4) exp -> . exp MUL exp
-    (5) exp -> . exp DIV exp
-    (6) exp -> . INTEGER
-
-    INTEGER         shift and go to state 3
-
-    exp                            shift and go to state 10
-
-state 7
-
-    (5) exp -> exp DIV . exp
-    (2) exp -> . exp SUM exp
-    (3) exp -> . exp SUB exp
-    (4) exp -> . exp MUL exp
-    (5) exp -> . exp DIV exp
-    (6) exp -> . INTEGER
-
-    INTEGER         shift and go to state 3
-
-    exp                            shift and go to state 11
-
-state 8
-
-    (2) exp -> exp SUM exp .
-    (2) exp -> exp . SUM exp
-    (3) exp -> exp . SUB exp
-    (4) exp -> exp . MUL exp
-    (5) exp -> exp . DIV exp
-
-    SUM             reduce using rule 2 (exp -> exp SUM exp .)
-    SUB             reduce using rule 2 (exp -> exp SUM exp .)
-    $end            reduce using rule 2 (exp -> exp SUM exp .)
-    MUL             shift and go to state 6
-    DIV             shift and go to state 7
-
-  ! MUL             [ reduce using rule 2 (exp -> exp SUM exp .) ]
-  ! DIV             [ reduce using rule 2 (exp -> exp SUM exp .) ]
-  ! SUM             [ shift and go to state 4 ]
-  ! SUB             [ shift and go to state 5 ]
-
-
-state 9
-
-    (3) exp -> exp SUB exp .
-    (2) exp -> exp . SUM exp
-    (3) exp -> exp . SUB exp
-    (4) exp -> exp . MUL exp
-    (5) exp -> exp . DIV exp
-
-    SUM             reduce using rule 3 (exp -> exp SUB exp .)
-    SUB             reduce using rule 3 (exp -> exp SUB exp .)
-    $end            reduce using rule 3 (exp -> exp SUB exp .)
-    MUL             shift and go to state 6
-    DIV             shift and go to state 7
-
-  ! MUL             [ reduce using rule 3 (exp -> exp SUB exp .) ]
-  ! DIV             [ reduce using rule 3 (exp -> exp SUB exp .) ]
-  ! SUM             [ shift and go to state 4 ]
-  ! SUB             [ shift and go to state 5 ]
-
-
-state 10
-
-    (4) exp -> exp MUL exp .
-    (2) exp -> exp . SUM exp
-    (3) exp -> exp . SUB exp
-    (4) exp -> exp . MUL exp
-    (5) exp -> exp . DIV exp
-
-    SUM             reduce using rule 4 (exp -> exp MUL exp .)
-    SUB             reduce using rule 4 (exp -> exp MUL exp .)
-    MUL             reduce using rule 4 (exp -> exp MUL exp .)
-    DIV             reduce using rule 4 (exp -> exp MUL exp .)
-    $end            reduce using rule 4 (exp -> exp MUL exp .)
-
-  ! SUM             [ shift and go to state 4 ]
-  ! SUB             [ shift and go to state 5 ]
-  ! MUL             [ shift and go to state 6 ]
-  ! DIV             [ shift and go to state 7 ]
-
-
-state 11
-
-    (5) exp -> exp DIV exp .
-    (2) exp -> exp . SUM exp
-    (3) exp -> exp . SUB exp
-    (4) exp -> exp . MUL exp
-    (5) exp -> exp . DIV exp
-
-    SUM             reduce using rule 5 (exp -> exp DIV exp .)
-    SUB             reduce using rule 5 (exp -> exp DIV exp .)
-    MUL             reduce using rule 5 (exp -> exp DIV exp .)
-    DIV             reduce using rule 5 (exp -> exp DIV exp .)
-    $end            reduce using rule 5 (exp -> exp DIV exp .)
-
-  ! SUM             [ shift and go to state 4 ]
-  ! SUB             [ shift and go to state 5 ]
-  ! MUL             [ shift and go to state 6 ]
-  ! DIV             [ shift and go to state 7 ]
+return               : 18
+stmt                 : 22 23
+stmtlist             : 
+type                 : 9 12 13
+vardec               : 4 14
+varlist              : 14
 
