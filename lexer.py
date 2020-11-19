@@ -10,6 +10,7 @@ class Lexer:
         'elseif': 'ELSEIF',
         'then': 'THEN',
         'while': 'WHILE',
+        'where': 'WHERE',
         'print': 'PRINT',
         'fun': 'FUNCTION',
         'return': 'RETURN',
@@ -64,14 +65,14 @@ class Lexer:
 
     # \w = [a-zA-Z_0-9]
     def t_ERROR(self, t):
-        r'(\d+\.\d+\.[a-zA-Z_0-9]*)|(\d+\.\d+[a-zA-Z_]+)|([0-9]+[a-zA-Z_]+)|([A-Z](\w)*)|([\+\-\*\/\%][ \+\-\*\/\%]*[\+\-\*\/\%])'
+        r"""(\d+\.\d+\.[a-zA-Z_0-9]*)|(\d+\.\d+[a-zA-Z_]+)|([0-9]+[a-zA-Z_]+)|([A-Z](\w)*)|([\+\-\*\/\%][ \+\-\*\/\%]*[\+\-\*\/\%])"""
         if self.reserved.get(t.value):  # Check for reserved words
             t.type = self.reserved.get(t.value)
             return t
         return t
 
     def t_FLOATNUMBER(self, t):
-        r'\d+\.\d+'
+        r"""\d+\.\d+"""
         t.value = float(t.value)
         if len(str(t.value).split('.')[0]) < 10:
             return t
@@ -79,7 +80,7 @@ class Lexer:
         return t
 
     def t_INTEGERNUMBER(self, t):
-        r'\d+'
+        r"""\d+"""
         # r'[+|-]?(\d+)'
         # print(t, t.value, len(t.value))
         t.value = int(t.value)
@@ -89,21 +90,21 @@ class Lexer:
         return t
 
     def t_ID(self, t):
-        r'[a-z_][a-zA-Z_0-9]*'
+        r"""[a-z_][a-zA-Z_0-9]*"""
         t.type = self.reserved.get(t.value, 'ID')  # Check for reserved words
         # Look up symbol table information and return a tuple
         # t.value = (t.value, symbol_lookup(t.value))
         return t
 
     def t_newline(self, t):
-        r'\n+'
+        r"""\n+"""
         t.lexer.lineno += len(t.value)
 
     t_ignore = '\n \t'
 
     # to discard a token, such as comment, simply define a token rule that returns no value
     def t_COMMENT(self, t):
-        r'\#.*'
+        r"""\#.*"""
         pass
         # No return value. Token discarded
 
