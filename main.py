@@ -3,7 +3,7 @@ from Parser import Parser
 
 
 lexer = Lexer().build()
-file = open('test.txt')
+file = open('parser contents//test3.txt')
 text_input = file.read()
 file.close()
 lexer.input(text_input)

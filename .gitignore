@@ -1,0 +1,9 @@
+lexer contents/
+parser contents/
+__pycache__/
+.idea/
+parsetab.py
+parser.out
+*.txt
+Parser2.py
+Parser3.py
