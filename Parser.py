@@ -26,11 +26,6 @@ class Parser:
         """declist : declist dec"""
         print("declist : declist dec")
 
-    # TODO : commenting this reduces 2 conflicts but doesn't parse p_program without declist any more so i added p_program_simple rule
-    # def p_declist_lambda(self, p):
-    #     """declist : """
-    #     print("declist : ")
-
     def p_dec_vardec(self, p):
         """dec : vardec"""
         print("dec : vardec")
@@ -51,21 +46,13 @@ class Parser:
         """type : BOOLEAN"""
         print("type : BOOLEAN")
 
-    def p_iddec_id(self, p):
-        """iddec : ID"""
-        print("iddec : ID")
+    def p_iddec_lvalue(self, p):
+        """iddec : lvalue"""
+        print("iddec : lvalue")
 
-    def p_iddec_id_array(self, p):
-        """iddec : ID LSB exp RSB"""
-        print("iddec : ID LSB exp RSB")
-
-    def p_iddec_id_assign(self, p):
-        """iddec : ID ASSIGN exp"""
-        print("iddec : ID ASSIGN exp")
-
-    # def p_iddec_array_assign(self, p):
-    #     "iddec : ID ASSIGN ID LSB exp RSB"
-    #     print("iddec : ID ASSIGN ID LSB exp RSB")
+    def p_iddec_lvalue_assign(self, p):
+        """iddec : lvalue ASSIGN exp"""
+        print("iddec : lvalue ASSIGN exp")
 
     def p_idlist_iddec(self, p):
         """idlist : iddec"""
@@ -123,23 +110,17 @@ class Parser:
         """stmtlist : stmtlist stmt"""
         print("stmtlist : stmtlist")
 
-    # TODO : commenting this grammar reduces 30 conflicts and doesn't produce errors but i'm not sure if it parses correctly
-    # def p_stmtlist_lambda(self, p):
-    #     """stmtlist : """
-    #     print("stmtlist : ")
-
-    #
-    # def p_varlist_varlist(self, p):
-    #     "varlist : varlist vardec"
-    #     print("varlist : varlist vardec")
-
-    def p_lvalue_id_array(self, p):
-        """lvalue : ID LSB exp RSB"""
-        print("lvalue : ID LSB exp RSB")
-
     def p_lvalue_id(self, p):
         """lvalue : ID"""
         print("lvalue : ID")
+
+    def p_lvalue_id_array(self, p):
+        """lvalue : ID array"""
+        print("lvalue : ID array")
+
+    def p_array(self, p):
+        """array : LSB exp RSB"""
+        print("array : LSB exp RSB")
 
     def p_case_where(self, p):
         """case : WHERE exp COLON stmtlist"""
@@ -152,11 +133,6 @@ class Parser:
     def p_cases_cases(self, p):
         """cases : cases case"""
         print("cases : cases case")
-
-    # TODO : commenting this reduces 1 conflict, but im not sure...
-    # def p_cases_lambda(self, p):
-    #     """cases : """
-    #     print("cases : ")
 
     def p_stmt_return(self, p):
         """stmt : RETURN exp SEMICOLON"""
@@ -194,36 +170,29 @@ class Parser:
         """stmt : PRINT LRB ID RRB SEMICOLON"""
         print("stmt : PRINT LRB ID RRB SEMICOLON")
 
-    def p_stmt_elseIfList(self, p):
-        """stmt : IF LRB exp RRB stmt elseiflist"""
-        print("stmt : IF LRB exp RRB stmt elseiflist")
+    def p_stmt_IF(self, p):
+        """stmt : IF LRB exp RRB stmt elseiflist elsestmt"""
+        print("stmt : IF LRB exp RRB stmt elseiflist elsestmt")
 
-    def p_stmt_else(self, p):
-        """stmt : IF LRB exp RRB stmt elseiflist ELSE stmt"""
-        print("stmt : IF LRB exp RRB stmt elseiflist ELSE stmt")
+    def p_elsestmt(self, p):
+        """elsestmt : ELSE stmt"""
+        print("elsestmt : ELSE stmt")
 
-    # TODO : commenting this reduces 1 conflict but im not sure if it's correct
-    # def p_elseIfList_elseIf(self, p):
-    #     """elseiflist : ELSEIF LRB exp RRB stmt"""
-    #     print("elseiflist : ELSEIF LRB exp RRB stmt")
+    def p_elsestmt_Lambda(self, p):
+        """elsestmt : %prec IF"""
+        print("elsestmt : ")
 
-    def p_elseIfList_elseIfList(self, p):
+    def p_elseiflist(self, p):
         """elseiflist : elseiflist ELSEIF LRB exp RRB stmt"""
-        print("elseiflist : elseiflist ELSEIF LRB exp RRB stmt")
+        print("""elseiflist : elseiflist ELSEIF LRB exp RRB stmt""")
 
-    def p_elseIfList_lambda(self, p):
+    def p_elseiflist_Lambda(self, p):
         """elseiflist : """
         print("elseiflist : ")
 
     def p_exp_lvalue_assign(self, p):
         """exp : lvalue ASSIGN exp"""
         print("exp : lvalue ASSIGN exp")
-
-    # TODO this was added by me
-    # with this we can parse expressions like a = b[i]; or a = 3 + c[i];
-    def p_exp_id_assign(self, p):
-        """exp : ID ASSIGN exp"""
-        print("exp : ID ASSIGN exp")
 
     def p_exp_lvalue(self, p):
         """exp : lvalue"""
@@ -329,12 +298,6 @@ class Parser:
         """explist : explist COMMA exp"""
         print("explist : explist COMMA exp")
 
-    # def p_exp_integerNumber(self, p):
-    #     "exp : INTEGERNUMBER"
-    #     print("exp : INTEGERNUMBER")
-    #     # p[0] = NonTerminal()
-    #     # p[0].value = p[1]
-
     precedence = (
         ('right', 'ASSIGN'),
         ('left', 'OR'),
@@ -343,10 +306,9 @@ class Parser:
         ('left', 'SUM', 'SUB'),
         ('left', 'MUL', 'DIV', 'MOD'),
         ('left', 'NOT'),
+        ('left', 'IF'),
+        ('left', 'ELSEIF', 'ELSE')
     )
-
-    # TODO : ASSIGN precedence reduces 40 conflicts but im not sure if it parses correctly
-    # TODO : if we add ('left', 'LRB', 'RRB') to precedences, else grammar can't be parsed, we may handle else in another way
 
     def new_temp(self):
         # temp = "T" + str(self.tempCount)
