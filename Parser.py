@@ -2,6 +2,7 @@ from ply import yacc
 from lexer import Lexer
 from nonTerminal import NonTerminal
 from codeGenerator import CodeGenerator
+from symbolTable import SymbolTable
 
 class Parser:
     tokens = Lexer().tokens
@@ -9,15 +10,21 @@ class Parser:
     def __init__(self):
         self.tempCount = 0
         self.codeGenerator = CodeGenerator()
+        self.symbolTable = SymbolTable()
+        self.array_length = 0
 
     def p_program(self, p):
         """program : declist MAIN LRB RRB block"""
         print("program : declist MAIN LRB RRB block")
+        self.symbolTable.end()
+        self.symbolTable.print_symbolTable()
         self.codeGenerator.end()
 
     def p_program_simple(self, p):
         """program : MAIN LRB RRB block"""
         print("program : MAIN LRB RRB block")
+        self.symbolTable.end()
+        self.symbolTable.print_symbolTable()
         self.codeGenerator.end()
 
     def p_declist_dec(self, p):
@@ -39,14 +46,17 @@ class Parser:
     def p_type_integer(self, p):
         """type : INTEGER"""
         print("type : INTEGER")
+        self.symbolTable.set_var_type('Int')
 
     def p_type_float(self, p):
         """type : FLOAT"""
         print("type : FLOAT")
+        self.symbolTable.set_var_type('Float')
 
     def p_type_boolean(self, p):
         """type : BOOLEAN"""
         print("type : BOOLEAN")
+        self.symbolTable.set_var_type('Boolean')
 
     def p_iddec_lvalue(self, p):
         """iddec : lvalue"""
@@ -71,10 +81,12 @@ class Parser:
     def p_funcdec_type_block(self, p):
         """funcdec : FUNCTION ID LRB paramdecs RRB COLON type block"""
         print("funcdec : FUNCTION ID LRB paramdecs RRB COLON type block")
+        self.symbolTable.new_scope_end(p[2])
 
     def p_funcdec_block(self, p):
         """funcdec : FUNCTION ID LRB paramdecs RRB block"""
         print("funcdec : FUNCTION ID LRB paramdecs RRB block")
+        self.symbolTable.new_scope_end(p[2])
 
     def p_paramdecs_paramdecslist(self, p):
         """paramdecs : paramdecslist"""
@@ -87,15 +99,19 @@ class Parser:
     def p_paramdecslist_paramdec(self, p):
         """paramdecslist : paramdec"""
         print("paramdecslist : paramdec")
+        self.symbolTable.new_scope_begin()
 
     def p_paramdecslist_paramdecslist(self, p):
         """paramdecslist : paramdecslist COMMA paramdec"""
         print("paramdecslist : paramdecslist COMMA paramdec")
+        self.symbolTable.new_scope_begin()
 
     def p_paramdec_id(self, p):
         """paramdec : ID COLON type"""
         print("paramdec : ID COLON type")
+        self.symbolTable.add_param_var(p[1])
 
+    # TODO
     def p_paramdec_id_array(self, p):
         """paramdec : ID LSB RSB COLON type"""
         print("paramdec : ID LSB RSB COLON type")
@@ -115,10 +131,17 @@ class Parser:
     def p_lvalue_id(self, p):
         """lvalue : ID"""
         print("lvalue : ID")
+        # print("!!!!!!!!!!!!!!!!!!!!!!")
+        # print(p)
+        print(p[1])
+        # print(p[1])
+        # print("@@@@@@@@@@@@@@@@@@@@")
+        self.symbolTable.add_variable(p[1])
 
     def p_lvalue_id_array(self, p):
         """lvalue : ID array"""
         print("lvalue : ID array")
+        self.symbolTable.add_array(p[1], self.array_length)
 
     def p_array(self, p):
         """array : LSB exp RSB"""
@@ -143,6 +166,7 @@ class Parser:
     def p_stmt_exp(self, p):
         """stmt : exp SEMICOLON"""
         print("stmt : exp SEMICOLON")
+        self.symbolTable.stack.clear()
 
     def p_stmt_block(self, p):
         """stmt : block"""
@@ -195,10 +219,12 @@ class Parser:
     def p_exp_lvalue_assign(self, p):
         """exp : lvalue ASSIGN exp"""
         print("exp : lvalue ASSIGN exp")
+        self.codeGenerator.assign(p, self.new_temp())
 
     def p_exp_lvalue(self, p):
         """exp : lvalue"""
         print("exp : lvalue")
+        self.codeGenerator.assign2(p, self.new_temp())
 
     def p_exp_id_explist(self, p):
         """exp : ID LRB explist RRB"""
@@ -251,6 +277,7 @@ class Parser:
     def p_exp_mod(self, p):
         """exp : exp MOD exp"""
         print("exp : exp MOD exp")
+        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
 
     def p_exp_gt_exp(self, p):
         """exp : exp GT exp"""
@@ -278,21 +305,33 @@ class Parser:
 
     def p_exp_int(self, p):
         """exp : INTEGERNUMBER"""
+        print("exp : INTEGERNUMBER")
+        self.array_length = p[1]
         p[0] = NonTerminal()
         p[0].value = str(p[1])
-        print("exp : INTEGERNUMBER")
+        # print("--------------------")
+        # print(p)
+        # print(p[0])
+        # print(p[1])
+        # print("================")
         # print(p[0], p[1])
 
     def p_exp_float(self, p):
         """exp : FLOATNUMBER"""
+        p[0] = NonTerminal()
+        p[0].value = str(int(p[1]))
         print("exp : FLOATNUMBER")
 
     def p_exp_true(self, p):
         """exp : TRUE"""
+        p[0] = NonTerminal()
+        p[0].value = '1'
         print("exp : TRUE")
 
     def p_exp_false(self, p):
         """exp : FALSE"""
+        p[0] = NonTerminal()
+        p[0].value = '0'
         print("exp : FALSE")
 
     def p_explist_exp(self, p):
