@@ -12,6 +12,7 @@ class Parser:
         self.codeGenerator = CodeGenerator()
         self.symbolTable = SymbolTable()
         self.array_length = 0
+        self.var_stack = []
 
     def p_program(self, p):
         """program : declist MAIN LRB RRB block"""
@@ -46,16 +47,19 @@ class Parser:
     def p_type_integer(self, p):
         """type : INTEGER"""
         print("type : INTEGER")
+        self.var_stack.clear()
         self.symbolTable.set_var_type('Int')
 
     def p_type_float(self, p):
         """type : FLOAT"""
         print("type : FLOAT")
+        self.var_stack.clear()
         self.symbolTable.set_var_type('Float')
 
     def p_type_boolean(self, p):
         """type : BOOLEAN"""
         print("type : BOOLEAN")
+        self.var_stack.clear()
         self.symbolTable.set_var_type('Boolean')
 
     def p_iddec_lvalue(self, p):
@@ -65,6 +69,12 @@ class Parser:
     def p_iddec_lvalue_assign(self, p):
         """iddec : lvalue ASSIGN exp"""
         print("iddec : lvalue ASSIGN exp")
+        place = self.new_temp()
+        exp_place = ''
+        if p[3] is None:
+            exp_place = self.find_place()
+        self.symbolTable.add_place(self.var_stack.pop(), place)
+        self.codeGenerator.assign(p, place, exp_place=exp_place)
 
     def p_idlist_iddec(self, p):
         """idlist : iddec"""
@@ -131,17 +141,19 @@ class Parser:
     def p_lvalue_id(self, p):
         """lvalue : ID"""
         print("lvalue : ID")
-        # print("!!!!!!!!!!!!!!!!!!!!!!")
-        # print(p)
         print(p[1])
-        # print(p[1])
-        # print("@@@@@@@@@@@@@@@@@@@@")
-        self.symbolTable.add_variable(p[1])
+        self.var_stack.append(p[1])
+        if not self.symbolTable.already_defined(p[1]):
+            self.symbolTable.add_variable(p[1])
 
     def p_lvalue_id_array(self, p):
         """lvalue : ID array"""
         print("lvalue : ID array")
-        self.symbolTable.add_array(p[1], self.array_length)
+        name = p[1] + '[' + str(self.array_length) + ']'
+        print(name)
+        self.var_stack.append(name)
+        if not self.symbolTable.already_defined(p[1] + '[' + str(0) + ']'):
+            self.symbolTable.add_array(p[1], self.array_length)
 
     def p_array(self, p):
         """array : LSB exp RSB"""
@@ -195,6 +207,7 @@ class Parser:
     def p_stmt_print(self, p):
         """stmt : PRINT LRB ID RRB SEMICOLON"""
         print("stmt : PRINT LRB ID RRB SEMICOLON")
+        self.codeGenerator.print(self.find_place(name=p[3]))
 
     def p_stmt_IF(self, p):
         """stmt : IF LRB exp RRB stmt elseiflist elsestmt"""
@@ -219,20 +232,29 @@ class Parser:
     def p_exp_lvalue_assign(self, p):
         """exp : lvalue ASSIGN exp"""
         print("exp : lvalue ASSIGN exp")
-        self.codeGenerator.assign(p, self.new_temp())
+        place = self.new_temp()
+        exp_place = ''
+        if p[3] is None:
+            exp_place = self.find_place()
+        self.symbolTable.add_place(self.var_stack.pop(), place)
+        self.codeGenerator.assign(p, place, exp_place=exp_place)
 
     def p_exp_lvalue(self, p):
         """exp : lvalue"""
         print("exp : lvalue")
-        self.codeGenerator.assign2(p, self.new_temp())
 
     def p_exp_id_explist(self, p):
         """exp : ID LRB explist RRB"""
         print("exp : ID LRB explist RRB")
 
+    # TODO care, may cause problem in future
     def p_exp_parenthesis_exp(self, p):
         """exp : LRB exp RRB"""
         print("exp : LRB exp RRB")
+        p[0] = NonTerminal()
+        p[0].place = p[2].get_value()
+        print(p[2].value)
+        print(p[2].place)
 
     def p_exp_id(self, p):
         """exp : ID LRB RRB"""
@@ -257,27 +279,64 @@ class Parser:
     def p_exp_sum(self, p):
         "exp : exp SUM exp"
         print("exp : exp SUM exp")
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
+        # TODO
+        place1 = ''
+        place3 = ''
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
 
     def p_exp_sub(self, p):
         "exp : exp SUB exp"
         print("exp : exp SUB exp")
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
+        place1 = ''
+        place3 = ''
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
 
     def p_exp_mul(self, p):
         "exp : exp MUL exp"
         print("exp : exp MUL exp")
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
+        place1 = ''
+        place3 = ''
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
 
     def p_exp_div(self, p):
         "exp : exp DIV exp"
         print("exp : exp DIV exp")
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
+        place1 = ''
+        place3 = ''
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        if p[1] is None and p[3] is None:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place3, place3=place1)
+        else:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
 
     def p_exp_mod(self, p):
         """exp : exp MOD exp"""
         print("exp : exp MOD exp")
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp())
+        place1 = ''
+        place3 = ''
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        if p[1] is None and p[3] is None:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place3, place3=place1)
+        else:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
 
     def p_exp_gt_exp(self, p):
         """exp : exp GT exp"""
@@ -309,12 +368,6 @@ class Parser:
         self.array_length = p[1]
         p[0] = NonTerminal()
         p[0].value = str(p[1])
-        # print("--------------------")
-        # print(p)
-        # print(p[0])
-        # print(p[1])
-        # print("================")
-        # print(p[0], p[1])
 
     def p_exp_float(self, p):
         """exp : FLOATNUMBER"""
@@ -358,6 +411,12 @@ class Parser:
         temp = "T" + str(self.tempCount)
         self.tempCount += 1
         return temp
+
+    def find_place(self, name=''):
+        tmp = name
+        if name == '':
+            tmp = self.var_stack.pop()
+        return self.symbolTable.find_place(tmp)
 
     def p_error(self, p):
         # print(p.value)

@@ -11,10 +11,6 @@ class SymbolTable:
     # TODO param arr[] left
 
     def add_variable(self, name):
-        for var in self.object_list:
-            if name == var.name:
-                # TODO check when scope changes
-                return
         new_obj = SymbolTableObjects(name, 'variable', scope=self.current_scope)
         self.object_list.append(new_obj)
         self.stack.append(new_obj)
@@ -22,6 +18,13 @@ class SymbolTable:
     def add_array(self, name, length):
         for i in range(0, length):
             self.add_variable(name + '[' + str(i) + ']')
+
+    def already_defined(self, name):
+        for var in self.object_list:
+            if name == var.name:
+                # TODO check when scope changes
+                return True
+        return False
 
     def add_param_var(self, name):
         size = self.get_type_size(self.current_type)
@@ -70,13 +73,13 @@ class SymbolTable:
         return size
 
     def print_symbolTable(self):
-        template = "{0:20}|{1:12}|{2:12}|{3:12}|{4:12}|{5:12}|{6:12}"
-        print("--------------------------------------------------------------------------------------")
-        print(template.format("name", "entity type", "var type", "size", "address", "return type", "scope"))
-        print("--------------------------------------------------------------------------------------")
+        template = "{0:20}|{1:12}|{2:12}|{3:12}|{4:12}|{5:12}|{6:12}|{7:12}"
+        print("----------------------------------------------------------------------------------------------------")
+        print(template.format("name", "entity type", "var type", "size", "address", "return type", "scope", "place"))
+        print("----------------------------------------------------------------------------------------------------")
         for var in self.object_list:
             print(template.format(var.name, var.entity_type, var.var_type, str(var.size), str(var.address),
-                                  var.return_type, var.scope))
+                                  var.return_type, var.scope, var.place))
 
     def new_scope_begin(self):
         self.current_scope = 'new_scope'
@@ -89,3 +92,13 @@ class SymbolTable:
             if var.scope == 'new_scope':
                 var.scope = scope_name
         self.current_scope = ''
+
+    def add_place(self, name, place):
+        for var in self.object_list:
+            if var.name == name:
+                var.place = place
+
+    def find_place(self, name):
+        for var in self.object_list:
+            if var.name == name:
+                return var.place
