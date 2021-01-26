@@ -1,6 +1,7 @@
+lexer contents/
+parser contents/
 __pycache__/
 .idea/
-Yas/
 parsetab.py
 parser.out
 *.txt

@@ -5,4 +5,4 @@ int main(){
 	int T0;
 	T0 = 0;
 	int T1;
-	T1 = 4;
+	T1 = -1;

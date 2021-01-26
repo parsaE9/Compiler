@@ -9,10 +9,12 @@ class Parser:
 
     def __init__(self):
         self.tempCount = 0
+        self.tempCountBool = 0
         self.codeGenerator = CodeGenerator()
         self.symbolTable = SymbolTable()
         self.array_length = 0
         self.var_stack = []
+        self.latest_bool = None
 
     def p_program(self, p):
         """program : declist MAIN LRB RRB block"""
@@ -20,6 +22,7 @@ class Parser:
         self.symbolTable.end()
         self.symbolTable.print_symbolTable()
         self.codeGenerator.end()
+        print(NonTerminal.nonTerminals_list)
 
     def p_program_simple(self, p):
         """program : MAIN LRB RRB block"""
@@ -27,6 +30,7 @@ class Parser:
         self.symbolTable.end()
         self.symbolTable.print_symbolTable()
         self.codeGenerator.end()
+        print(NonTerminal.nonTerminals_list)
 
     def p_declist_dec(self, p):
         """declist : dec"""
@@ -69,6 +73,8 @@ class Parser:
     def p_iddec_lvalue_assign(self, p):
         """iddec : lvalue ASSIGN exp"""
         print("iddec : lvalue ASSIGN exp")
+        print(p[1])
+        print(p[3])
         place = self.new_temp()
         exp_place = ''
         if p[3] is None:
@@ -145,15 +151,23 @@ class Parser:
         self.var_stack.append(p[1])
         if not self.symbolTable.already_defined(p[1]):
             self.symbolTable.add_variable(p[1])
+        self.array_length = self.find_place(p[1])
 
     def p_lvalue_id_array(self, p):
         """lvalue : ID array"""
         print("lvalue : ID array")
-        name = p[1] + '[' + str(self.array_length) + ']'
+        index = self.array_length
+        if type(index) == str:
+            index = NonTerminal.nonTerminals_list[index]
+            name = p[1] + '[' + str(index) + ']'
+            print("!!!!!!!!!!!!!")
+        else:
+            print("@@@@@@@@@@")
+            name = p[1] + '[' + str(index) + ']'
         print(name)
         self.var_stack.append(name)
         if not self.symbolTable.already_defined(p[1] + '[' + str(0) + ']'):
-            self.symbolTable.add_array(p[1], self.array_length)
+            self.symbolTable.add_array(p[1], index)
 
     def p_array(self, p):
         """array : LSB exp RSB"""
@@ -251,10 +265,12 @@ class Parser:
     def p_exp_parenthesis_exp(self, p):
         """exp : LRB exp RRB"""
         print("exp : LRB exp RRB")
+        print(p[2])
         p[0] = NonTerminal()
-        p[0].place = p[2].get_value()
-        print(p[2].value)
-        print(p[2].place)
+        if p[2] is None:
+            p[0].place = self.find_place()
+        else:
+            p[0].place = p[2].get_value()
 
     def p_exp_id(self, p):
         """exp : ID LRB RRB"""
@@ -263,6 +279,13 @@ class Parser:
     def p_exp_SUB_exp(self, p):
         """exp : SUB exp"""
         print("exp : SUB exp")
+        place = self.new_temp()
+        exp_place = ''
+        if p[2] is None:
+            exp_place = self.find_place()
+        self.symbolTable.add_place(self.var_stack.pop(), place)
+        self.codeGenerator.not_assign(p, place, exp_place=exp_place)
+        self.var_stack.append(place)
 
     def p_exp_not_exp(self, p):
         """exp : NOT exp"""
@@ -274,7 +297,7 @@ class Parser:
 
     def p_exp_and(self, p):
         """exp : exp AND exp"""
-        print("exp : AND")
+        print("exp : exp AND exp")
 
     def p_exp_sum(self, p):
         "exp : exp SUM exp"
@@ -287,6 +310,7 @@ class Parser:
         if p[3] is None:
             place3 = self.find_place()
         self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        self.array_length = p[0].get_value()
 
     def p_exp_sub(self, p):
         "exp : exp SUB exp"
@@ -297,7 +321,11 @@ class Parser:
             place1 = self.find_place()
         if p[3] is None:
             place3 = self.find_place()
-        self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        if p[1] is None and p[3] is None:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place3, place3=place1)
+        else:
+            self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        self.array_length = p[0].place
 
     def p_exp_mul(self, p):
         "exp : exp MUL exp"
@@ -309,6 +337,7 @@ class Parser:
         if p[3] is None:
             place3 = self.find_place()
         self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        self.array_length = p[0].place
 
     def p_exp_div(self, p):
         "exp : exp DIV exp"
@@ -323,6 +352,7 @@ class Parser:
             self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place3, place3=place1)
         else:
             self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        self.array_length = p[0].place
 
     def p_exp_mod(self, p):
         """exp : exp MOD exp"""
@@ -337,14 +367,42 @@ class Parser:
             self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place3, place3=place1)
         else:
             self.codeGenerator.generate_arithmetic_code(p, self.new_temp(), place1=place1, place3=place3)
+        self.array_length = p[0].place
 
     def p_exp_gt_exp(self, p):
         """exp : exp GT exp"""
         print("exp : exp GT exp")
+        print("*****************")
+        print(p[1])
+        print(p[2])
+        print(p[3])
+        print("*****************")
+        place1 = ''
+        place3 = ''
+        if p[1] is not None and p[1].value == '':
+            place1 = self.latest_bool
+            self.latest_bool = None
+        if p[1] is None:
+            place1 = self.find_place()
+        if p[3] is None:
+            place3 = self.find_place()
+        if p[1] is None and p[3] is None:
+            self.codeGenerator.boolean_expression(p, self.new_bool_temp(), place1=place3, place3=place1)
+        else:
+            self.codeGenerator.boolean_expression(p, self.new_bool_temp(), place1=place1, place3=place3)
+        if p[3] is None:
+            self.latest_bool = place3
+        else:
+            self.latest_bool = p[3].value
 
     def p_exp_lt_exp(self, p):
         """exp : exp LT exp"""
         print("exp : exp LT exp")
+        print("*****************")
+        print(p[1])
+        print(p[2])
+        print(p[3])
+        print("*****************")
 
     def p_exp_ne_exp(self, p):
         """exp : exp NE exp"""
@@ -371,21 +429,21 @@ class Parser:
 
     def p_exp_float(self, p):
         """exp : FLOATNUMBER"""
+        print("exp : FLOATNUMBER")
         p[0] = NonTerminal()
         p[0].value = str(int(p[1]))
-        print("exp : FLOATNUMBER")
 
     def p_exp_true(self, p):
         """exp : TRUE"""
+        print("exp : TRUE")
         p[0] = NonTerminal()
         p[0].value = '1'
-        print("exp : TRUE")
 
     def p_exp_false(self, p):
         """exp : FALSE"""
+        print("exp : FALSE")
         p[0] = NonTerminal()
         p[0].value = '0'
-        print("exp : FALSE")
 
     def p_explist_exp(self, p):
         """explist : exp"""
@@ -410,6 +468,11 @@ class Parser:
     def new_temp(self):
         temp = "T" + str(self.tempCount)
         self.tempCount += 1
+        return temp
+
+    def new_bool_temp(self):
+        temp = "B" + str(self.tempCountBool)
+        self.tempCountBool += 1
         return temp
 
     def find_place(self, name=''):
